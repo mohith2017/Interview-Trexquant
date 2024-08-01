@@ -2,6 +2,8 @@
 
 You are creating a version control visualizer for a company. They have nodes representing specific versions, and would like a platform to add, track and edit these versions.
 
+[Figma Link](https://www.figma.com/design/PpS7K9ujjWFKleJ9mF6YqK/Interview-Assessment?node-id=0-1&t=eKVp0Pgp4t2Ubc4e-1)
+
 User requirements:
 
 - Add a new node to the history.

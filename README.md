@@ -14,10 +14,10 @@ User requirements:
 
 For your project, please do the following:
 
-- Duplicate this figma.
+- Duplicate the given figma.
 - Add a page to this figma with a detailed design of the user requirements.
   - We have specifically kept the design vague to encourage showing off your design skills.
-- Fork the given Github repo.
+- Fork this Github repo.
 - Implement the project using Typescript, Next JS (Or related framework), and any design system you like.
 - Place your code and your figma file in the repo.
   - We will be looking at your commit history and your Github best practices.

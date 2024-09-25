@@ -14,6 +14,16 @@ import "@xyflow/react/dist/style.css";
 import "./index.css";
 import { createNode, editNode } from "@/app/lib/platform-api/ReactFlowClient";
 
+interface Node {
+  id: string; 
+  type:string;
+  data: {label: string, comments: string};
+  position: { x: number; y: number };  
+}
+
+
+
+
 const initialNodes = [
   {
     id: "87F0C113-97D6-4356-B874-44FD17BE713C",
@@ -22,6 +32,9 @@ const initialNodes = [
     position: { x: 0, y: 50 },
   },
 ];
+
+
+
 
 
 
@@ -35,20 +48,45 @@ const ReactFlowNode = () => {
 
   const [userId, setUserId] = useState("");
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [editingNodeId, setEditingNodeId] = useState(null);
+  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
   const [nodeValue, setNodeValue] = useState('');
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [contextMenuVisible, setContextMenuVisible] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
+  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const [edges, setEdges, onEdgesChange]:any[] = useEdgesState([]);
+  const [highlightedNodeIds, setHighlightedNodeIds] = useState<Array<string>>([]);
   const { screenToFlowPosition } = useReactFlow();
+  const contextMenuRef = useRef<HTMLDivElement>(null);
   const onConnect = useCallback(
     (params:any) => setEdges((eds:any) => addEdge(params, eds)),
     []
   );
 
-  const onNodeClick = (event:any, node:any) => {
-    console.log("Node", node.id, "Clicked");
-    setEditingNodeId(node.id);
+
+  const onNodeClick = () => {
+    
+    if (selectedNode) {
+      setEditingNodeId(selectedNode.id);
+    }
+    closeContextMenu()
   }
+
+
+  const onNodeRightClick = (event:any, node:any) => {
+    event.preventDefault();
+    setSelectedNode(node); // Store the clicked node for future actions
+    setContextMenuVisible(true);
+    setContextMenuPosition({ x: event.clientX, y: event.clientY });
+  };
+
   
+
+  // Close the context menu when clicking outside
+  const closeContextMenu = () => {
+    setContextMenuVisible(false);
+    setSelectedNode(null);
+  };
 
   const handleInputChange = (event:any) => {
     setNodeValue(event.target.value);
@@ -76,9 +114,33 @@ const ReactFlowNode = () => {
        response = await editNode({ id: editingNodeId, newValue: nodeValue, userId: userId});
     }
     console.log(response)
-    setEditingNodeId(null);
+    closeContextMenu();
     
   }
+
+  const handleFindPathToRoot = () => {
+    const findPath = (currentNodeId:any, visited = new Set()) => {
+      if (visited.has(currentNodeId)) return [];
+      visited.add(currentNodeId);
+
+      // Find edges connected to this node
+      const parentEdges = edges.filter((edge:any) => edge.target === currentNodeId);
+      if (parentEdges.length === 0) {
+        return [currentNodeId]; // Return this node if it's a root
+      }
+
+      // Recursively trace the path to the root node
+      return parentEdges.flatMap((edge:any) => findPath(edge.source, visited)).concat(currentNodeId);
+    };
+
+    if (selectedNode) {
+      const path = findPath(selectedNode.id);
+      console.log("Path to Root: ", path);
+      setHighlightedNodeIds(path)
+    }
+    
+    closeContextMenu();
+  };
 
   const onConnectEnd = useCallback(
     async (event:any, connectionState:any) => {
@@ -89,7 +151,7 @@ const ReactFlowNode = () => {
           "changedTouches" in event ? event.changedTouches[0] : event;
         const newNode = {
           id,
-          type:"default",
+          type:"custom",
           position: screenToFlowPosition({
             x: clientX,
             y: clientY,
@@ -116,6 +178,25 @@ const ReactFlowNode = () => {
   },[]);
 
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+
+      if (contextMenuRef.current && !(event.target as HTMLElement).closest('.context-menu')) {
+        closeContextMenu(); 
+      }
+    };
+
+    if (contextMenu) {
+      document.addEventListener('click', handleClickOutside);
+    } else {
+      document.removeEventListener('click', handleClickOutside);
+    }
+  
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [contextMenu]);
+
+  useEffect(() => {
     const initializeNode = async () => {
 
       // const getUserId = document.cookie.split('; ').find(row => row.startsWith('userId='))?.split('=')[1];
@@ -139,15 +220,24 @@ const ReactFlowNode = () => {
     initializeNode();
   },[userId]);
 
+  
+ 
+
   return (
     <>
     <div className="text-bold text-white text-md">Drag and drop to create new versions</div>
     <div className="wrapper" ref={reactFlowWrapper} style={{color:'black', width: '100vw', height: '100vh'}}>
       <ReactFlow
-        nodes={nodes}
+        nodes={nodes.map(node => ({
+          ...node,
+          style: {
+            border: highlightedNodeIds.includes(node.id) ? '2px solid orange' : 'none',
+          },
+        }))}
         edges={edges}
         onNodesChange={onNodesChange}
-        onNodeClick={onNodeClick}
+        // onNodeClick={onNodeClick}
+        onNodeContextMenu={onNodeRightClick}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onConnectEnd={onConnectEnd}
@@ -157,11 +247,15 @@ const ReactFlowNode = () => {
       >
         {nodes.map((node) => {
           const isEditing = editingNodeId === node.id;
+          // const isHighlighted = highlightedNodeIds.includes(node.id);
+
           return (
             <div key={node.id} style={{ 
               position: 'absolute', 
               right: node.position.x,
               bottom: node.position.y,
+              // border: isHighlighted ? '2px solid orange' : 'none',
+              
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center'
@@ -185,7 +279,7 @@ const ReactFlowNode = () => {
                 <div>{node.data.label}</div>
               )}
 
-              
+
               
             </div>
 
@@ -219,7 +313,26 @@ const ReactFlowNode = () => {
             ): null )))}
               </div>
           
-          
+          {/* Custom Context Menu */}
+      {contextMenuVisible && (
+        <div
+          style={{
+            position: 'absolute',
+            top: `${contextMenuPosition.y}px`,
+            left: `${contextMenuPosition.x}px`,
+            background: 'white',
+            boxShadow: '0px 4px 8px rgba(0,0,0,0.1)',
+            borderRadius: '4px',
+            zIndex: 10,
+          }}
+        >
+          <ul className="flex flex-col mt-2 px-2 py-2 text-blue-400">
+            <li><button onClick={onNodeClick}>Add Comment</button></li>
+            -------------------------
+            <li><button onClick={handleFindPathToRoot}>Find Path to Root</button></li>
+          </ul>
+        </div>
+      )}
       
     </div>
     </>

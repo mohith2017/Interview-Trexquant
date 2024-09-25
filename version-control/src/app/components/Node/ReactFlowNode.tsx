@@ -276,8 +276,8 @@ const ReactFlowNode = () => {
                 <button className="bg-blue-500 text-white mt-1 rounded p-1" onClick={handleUpdateClick} >Add comment</button>
                 </div>
               ) : (
-                <div>{node.data.label}</div>
-              )}
+                // <div>{node.data.label}</div>
+               <></>)}
 
 
               

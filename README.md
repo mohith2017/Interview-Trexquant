@@ -2,7 +2,7 @@
 
 You are creating a version control visualizer for a company. They have nodes representing specific versions, and would like a platform to add, track and edit these versions.
 
-[Figma Link](https://www.figma.com/design/PpS7K9ujjWFKleJ9mF6YqK/Interview-Assessment?node-id=0-1&t=eKVp0Pgp4t2Ubc4e-1)
+[Figma Link](https://www.figma.com/design/QltcKtk1vxM7TyGjcn5kEU/Interview-Assessment-(Copy)?node-id=0-1&t=BJ4FIAA8aUXR8AUy-1)
 
 ## Instructions to use the platform
 - Login to the version-control platform

@@ -12,8 +12,16 @@ You are creating a version control visualizer for a company. They have nodes rep
 - Try refreshing to check session management
 
 ## Temporary Credentials to login
-[x] userName: `"test1"`
-[x] password: `"pass"`
+userName: `"test1"` <br/>
+password: `"pass"`
+
+## Tech Stack Used
+- Next.js (React, Typescript)
+- Firebase (NoSQL, Admin SDK)
+- ReactFlow
+- Next Auth (Persistence)
+- Material UI, Tailwind and Shadcn UI
+- Vercel (Deployment)
 
 User requirements:
 

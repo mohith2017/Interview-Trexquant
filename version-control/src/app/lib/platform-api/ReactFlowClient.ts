@@ -17,8 +17,15 @@ interface Node {
   position: Position,
 }
 
+interface Edge {
+  id: string | null;
+  source: string | null,
+  target:string | null, 
+}
+
 interface CreateNodeParams {
   node: Node,
+  edges: Edge,
   userId: string,
 }
 
@@ -28,7 +35,7 @@ interface EditNodeParams {
   userId: string,
 }
 
-export async function createNode({ node, userId }: CreateNodeParams) {
+export async function createNode({ node, edges, userId }: CreateNodeParams) {
   const response = await fetch('/api/create', {
     method: 'POST',
     headers: {
@@ -36,6 +43,7 @@ export async function createNode({ node, userId }: CreateNodeParams) {
     },
     body: JSON.stringify({
       id: node.id,
+      edges: edges,
       type: node.type,
       data: { label: node.data.label, comments: node.data.comments },
       position: node.position,
@@ -43,8 +51,24 @@ export async function createNode({ node, userId }: CreateNodeParams) {
     }),
   });
 
+
   if (!response.ok) {
     throw new Error('Failed to create node');
+  }
+
+  return response.json();
+}
+
+export async function getNode(userId: string | "") {
+  const response = await fetch(`/api/create?userId=${encodeURIComponent(userId)}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch nodes');
   }
 
   return response.json();

@@ -12,7 +12,7 @@ import {
 import "@xyflow/react/dist/style.css";
 
 import "./index.css";
-import { createNode, editNode } from "@/app/lib/platform-api/ReactFlowClient";
+import { createNode, editNode, getNode } from "@/app/lib/platform-api/ReactFlowClient";
 
 interface Node {
   id: string; 
@@ -27,13 +27,13 @@ interface Node {
 const initialNodes = [
   {
     id: "87F0C113-97D6-4356-B874-44FD17BE713C",
-    type: "input",
+    type: "default",
     data: { label: "A" , comments: ''},
     position: { x: 0, y: 50 },
   },
 ];
 
-
+type Props = { userName: string | ""; email: string | null};
 
 
 
@@ -43,7 +43,7 @@ const getId = () => uuidv4().toString();
 const getNodeVal = () => nodeVal++;
 const nodeOrigin: [number, number] = [0.5, 0];
 
-const ReactFlowNode = () => {
+export default function ReactFlowNode({ userName, email }: Props ) {
   const reactFlowWrapper = useRef(null);
 
   const [userId, setUserId] = useState("");
@@ -151,7 +151,7 @@ const ReactFlowNode = () => {
           "changedTouches" in event ? event.changedTouches[0] : event;
         const newNode = {
           id,
-          type:"custom",
+          type:"default",
           position: screenToFlowPosition({
             x: clientX,
             y: clientY,
@@ -164,18 +164,15 @@ const ReactFlowNode = () => {
         setEdges((eds:any) =>
           eds.concat({ id, source: connectionState.fromNode.id, target: id })
         );
-        console.log(userId);
-        const response = await createNode({ node: newNode, userId: userId});
+        // console.log(userId);
+        const response = await createNode({ node: newNode, edges:{ id, source: connectionState.fromNode.id, target: id }, userId: userName});
         console.log(response)
       }
     },
     [screenToFlowPosition, userId]
   );
 
-  useEffect(() => {
-      let userID = uuidv4().toString();
-      setUserId(userID);
-  },[]);
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -198,27 +195,39 @@ const ReactFlowNode = () => {
 
   useEffect(() => {
     const initializeNode = async () => {
+      console.log(userName)
 
-      // const getUserId = document.cookie.split('; ').find(row => row.startsWith('userId='))?.split('=')[1];
+      // const username = document.cookie.split('; ').find(row => row.startsWith('userId='))?.split('=')[1] || "";
       // // console.log(getUserId)
 
       // if(!getUserId)
       // {
+      const response = await getNode(userName);
+      // console.log(response.nodes);
+      if (!response.nodes)
+      {
           try {
-              document.cookie = `userId=${userId}; path=/; max-age=86400`;
+              // document.cookie = `userId=${userName}; path=/; max-age=86400`;
               
-              console.log(userId)
-              const success = await createNode({ node: initialNodes[0], userId: userId});
-              console.log(success)
+              // console.log(userId)
+              const response = await createNode({ node: initialNodes[0], edges: {id: null, source: null, target:null}, userId: userName});
+              console.log(response)
+
+              // setNodes(initialNodes);
+              // setEdges(response.edges);
               
             } catch (error) {
               console.error('Failed to create initial node:', error);
             }
-    //  }
+       }
+       else{
+          setNodes(response.nodes);
+          setEdges(response.edges);
+       }
     
     }
     initializeNode();
-  },[userId]);
+  },[userName]);
 
   
  
@@ -276,8 +285,8 @@ const ReactFlowNode = () => {
                 <button className="bg-blue-500 text-white mt-1 rounded p-1" onClick={handleUpdateClick} >Add comment</button>
                 </div>
               ) : (
-                <div>{node.data.label}</div>
-              )}
+                // <div>{node.data.label}</div>
+               <></>)}
 
 
               
@@ -338,9 +347,3 @@ const ReactFlowNode = () => {
     </>
   );
 };
-
-export default () => (
-  <ReactFlowProvider>
-    <ReactFlowNode />
-  </ReactFlowProvider>
-);

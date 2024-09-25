@@ -35,6 +35,8 @@ const ReactFlowNode = () => {
 
   const [userId, setUserId] = useState("");
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [editingNodeId, setEditingNodeId] = useState(null);
+  const [nodeValue, setNodeValue] = useState('');
   const [edges, setEdges, onEdgesChange]:any[] = useEdgesState([]);
   const { screenToFlowPosition } = useReactFlow();
   const onConnect = useCallback(
@@ -42,7 +44,39 @@ const ReactFlowNode = () => {
     []
   );
 
+  const onNodeClick = (event:any, node:any) => {
+    console.log("Node", node.id, "Clicked");
+    setEditingNodeId(node.id);
+    setNodeValue(node.data.label);
+  }
   
+
+  const handleInputChange = (event:any) => {
+    setNodeValue(event.target.value);
+  };
+
+  const handleInputBlur = () => {
+    if (editingNodeId) {
+      handleUpdateClick(); 
+    }
+    setEditingNodeId(null);
+     
+  };
+
+  const handleUpdateClick = async () => {
+    setNodes((nds) =>
+      nds.map((n) => {
+        if (n.id === editingNodeId) {
+          return { ...n, data: { ...n.data, label: nodeValue } };
+        }
+        return n;
+      })
+    );
+    // const response = await editNode({ id: editingNodeId, newValue: nodeValue, userId});
+    // console.log(response)
+    setEditingNodeId(null);
+    
+  }
 
   const onConnectEnd = useCallback(
     async (event:any, connectionState:any) => {
@@ -111,13 +145,40 @@ const ReactFlowNode = () => {
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
+        onNodeClick={onNodeClick}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onConnectEnd={onConnectEnd}
         fitView
         fitViewOptions={{ padding: 2 }}
         nodeOrigin={nodeOrigin}
-      />
+      >
+        {nodes.map((node) => {
+          const isEditing = editingNodeId === node.id;
+          return (
+            <div key={node.id} style={{ 
+              position: 'absolute', 
+              right: node.position.x,
+              bottom: node.position.y,
+              }}>
+              {isEditing ? (
+                <div className="flex flex-col mt-2">
+                <input
+                  value={nodeValue}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  autoFocus
+                  className="border border-gray-300 rounded p-1"
+                />
+                <button className="bg-blue-500 text-white mt-1 rounded p-1" onClick={handleUpdateClick} >Update Value</button>
+                </div>
+              ) : (
+                <div>{node.data.label}</div>
+              )}
+            </div>
+          );
+        })}
+      </ReactFlow>
     </div>
     </>
   );

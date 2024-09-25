@@ -19,10 +19,13 @@ const db = getFirestore();
 
 export async function POST(req: Request) {
   try {
-    const { type, data, position, userId } = await req.json();
-    console.log("TYPE:", type, "DATA: ", data, position, "USER ID:", userId);
+    const { id, type, data, position, userId } = await req.json();
+    console.log("ID", id, "TYPE:", type, "DATA: ", data, position, "USER ID:", userId);
     
+
+
     const docRef = await db.collection('users').doc(userId).collection('nodes').add({
+      id,
       type,
       data,
       position,

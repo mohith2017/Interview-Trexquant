@@ -17,23 +17,22 @@ interface Node {
 }
 
 interface CreateNodeParams {
-  label: string;
-  position: Position;
-  userId: string;
-  type?: string;
+  node: Node,
+  userId: string,
 }
 
-export async function createNode({ label, position, userId }: CreateNodeParams) {
+export async function createNode({ node, userId }: CreateNodeParams) {
   const response = await fetch('/api/create', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      type: 'default',
-      data: { label },
-      position,
-      userId,
+      id: node.id,
+      type: node.type,
+      data: { label: node.data.label },
+      position: node.position,
+      userId: userId,
     }),
   });
 

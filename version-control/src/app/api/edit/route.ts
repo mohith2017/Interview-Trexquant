@@ -19,28 +19,19 @@ const db = getFirestore();
 
 export async function POST(req: Request) {
   try {
-    const { id, type, data, position, userId } = await req.json();
-    console.log("ID", id, "TYPE:", type, "DATA: ", data, position, "USER ID:", userId);
+    const { id, newValue, userId } = await req.json();
+    console.log("ID", id, "New Value", newValue, "USER ID:", userId);
     
 
+    const userNodeRef = db.collection('users').doc(userId).collection('nodes').doc(id);
 
-    const docRef = await db.collection('users').doc(userId).collection('nodes').doc(id).set({
-      id,
-      type,
-      data,
-      position,
-    });
+    await userNodeRef.update({
+     'data.comments': newValue
+    })
 
-    const newNode = {
-      id: id,
-      type,
-      data,
-      position,
-    };
-
-    return NextResponse.json(newNode, { status: 201 });
+    return NextResponse.json({ status: 201 });
   } catch (error) {
-    console.error('Error creating node:', error);
-    return NextResponse.json({ error: 'Failed to create node' }, { status: 500 });
+    console.error('Error updating node:', error);
+    return NextResponse.json({ error: 'Failed to update node' }, { status: 500 });
   }
 }

@@ -5,15 +5,15 @@ You are creating a version control visualizer for a company. They have nodes rep
 [Figma Link](https://www.figma.com/design/PpS7K9ujjWFKleJ9mF6YqK/Interview-Assessment?node-id=0-1&t=eKVp0Pgp4t2Ubc4e-1)
 
 ## Instructions to use the platform
-[] Login to the version-control platform
-[] Drag and drop to create new nodes
-[] Right click to 'Add comments' or 'Find root path'
-[] Type in input box to update and add new comments
-[] Try refreshing to check session management
+- Login to the version-control platform
+- Drag and drop to create new nodes
+- Right click to 'Add comments' or 'Find root path'
+- Type in input box to update and add new comments
+- Try refreshing to check session management
 
 ## Temporary Credentials to login
-[] userName: `"test1"`
-[] password: `"pass"`
+[x] userName: `"test1"`
+[x] password: `"pass"`
 
 User requirements:
 
